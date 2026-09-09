@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link href="https://fonts.googleapis.com/css2?family=Freeman&family=Fugaz+One&family=Stint+Ultra+Condensed&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  .sk-tap{cursor:pointer}
+  .sk-tap:active{opacity:.65}
+  .sk-scroll::-webkit-scrollbar{display:none}
+  .sk-ico{background:currentColor;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain}
+</style>
+</helmet>
+<x-import component-from-global-scope="AndroidDevice" from="./android-frame.jsx ./ios-frame.jsx" dark="{{ true }}" hint-size="412px,892px">
+<div class="sk-scroll" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;background:#000;color:#d9d9d9;font-family:Inter,system-ui,sans-serif;overflow:hidden">
+
+  <div style="flex:1;position:relative;overflow:hidden">
+
+    <!-- ══ MAP ══ -->
+    <sc-if value="{{ onMap }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+      <iframe ref="{{ mapRef }}" src="./map.html?skin=ink" title="Spot map" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+
+      <sc-if value="{{ placing }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;top:0;bottom:0;width:2px;background:#d9d9d9"></div>
+          <div style="position:absolute;left:0;right:0;height:2px;background:#d9d9d9"></div>
+          <div style="width:56px;height:56px;border:2px solid #d9d9d9;border-radius:50%"></div>
+        </div>
+      </sc-if>
+
+      <div style="position:relative;padding:11px 12px 0;display:flex;flex-direction:column;gap:9px">
+        <div class="sk-scroll" style="display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:none">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+            <div onClick="{{ f.pick }}" class="sk-tap" style="flex:none;display:flex;align-items:center;height:42px;padding:0 18px;border-radius:20px;background:{{ f.bg }};color:{{ f.fg }};font-family:Freeman,system-ui,sans-serif;font-size:17px;line-height:1">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 12px 10px">
+        <div onClick="{{ toggleLayer }}" class="sk-tap" style="display:flex;align-items:center;height:44px;padding:0 18px;border-radius:22px;background:#000;border:2px solid #d9d9d9;color:#d9d9d9;font-family:Freeman,system-ui,sans-serif;font-size:16px;line-height:1">{{ layerLabel }}</div>
+        <div onClick="{{ startPlace }}" class="sk-tap" style="display:flex;align-items:center;gap:10px;height:52px;padding:0 20px;border-radius:26px;background:#d9d9d9;color:#000">
+          <div class="sk-ico" style="width:16px;height:38px;-webkit-mask-image:url(./assets/icon-spray.svg);mask-image:url(./assets/icon-spray.svg)"></div>
+          <span style="font-family:'Fugaz One',system-ui,sans-serif;font-size:18px;line-height:1">tag a spot</span>
+        </div>
+      </div>
+
+      <div class="sk-scroll" style="position:relative;padding:0 12px 12px;display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none">
+        <sc-for list="{{ rail }}" as="c" hint-placeholder-count="2">
+          <div onClick="{{ c.open }}" class="sk-tap" style="flex:none;width:214px;border-radius:20px;background:#d9d9d9;color:#000;padding:11px;scroll-snap-align:start">
+            <div style="height:96px;border-radius:14px;background:#7c7c7c url({{ c.photo }}) center / cover no-repeat;display:flex;align-items:flex-end;padding:8px">
+              <span style="font-size:10px;letter-spacing:.04em;padding:3px 8px;border-radius:9px;background:#000;color:#d9d9d9">{{ c.photoLabel }}</span>
+            </div>
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-top:9px">
+              <span style="font-family:Freeman,system-ui,sans-serif;font-size:18px;line-height:1.05">{{ c.name }}</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:7px">
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em">{{ c.meta }}</span>
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;border-radius:9px;background:#000;color:#d9d9d9">{{ c.statusLabel }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ placing }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:20px;background:#d9d9d9;color:#000">
+          <div style="flex:1">
+            <div style="font-family:'Fugaz One',system-ui,sans-serif;font-size:19px;line-height:1.1">where at?</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;margin-top:3px">tap the map · ±5 m</div>
+          </div>
+          <div onClick="{{ cancelPlace }}" class="sk-tap" style="display:flex;align-items:center;height:38px;padding:0 14px;border-radius:19px;background:#000;color:#d9d9d9;font-family:Freeman,system-ui,sans-serif;font-size:15px">nah</div>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ══ SPOT LIST ══ -->
+    <sc-if value="{{ onSpots }}" hint-placeholder-val="{{ false }}">
+    <div class="sk-scroll" style="position:absolute;inset:0;overflow:auto;background:#000;padding:12px 12px 18px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="margin:0;flex:1;font-family:'Fugaz One',system-ui,sans-serif;font-size:28px;line-height:1;color:#fff">spots</h2>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">{{ spotCount }}</span>
+      </div>
+      <div class="sk-scroll" style="flex:none;display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding-bottom:2px;scrollbar-width:none">
+        <sc-for list="{{ filters }}" as="f" hint-placeholder-count="6">
+          <div onClick="{{ f.pick }}" class="sk-tap" style="flex:none;display:flex;align-items:center;height:40px;padding:0 16px;border-radius:20px;background:{{ f.bg }};color:{{ f.fg }};border:2px solid {{ f.br }};font-family:Freeman,system-ui,sans-serif;font-size:16px;line-height:1">{{ f.label }}</div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ list }}" as="c" hint-placeholder-count="5">
+        <div onClick="{{ c.open }}" class="sk-tap" style="display:flex;gap:12px;padding:11px;border-radius:20px;background:#d9d9d9;color:#000">
+          <div style="width:94px;height:94px;flex:none;border-radius:14px;background:#7c7c7c url({{ c.photo }}) center / cover no-repeat"></div>
+          <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+            <div style="font-family:Freeman,system-ui,sans-serif;font-size:19px;line-height:1.1;text-wrap:pretty">{{ c.name }}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              <sc-for list="{{ c.tags }}" as="tg" hint-placeholder-count="2">
+                <span style="font-size:9px;text-transform:uppercase;letter-spacing:.09em;padding:3px 8px;border-radius:9px;border:1.5px solid #000">{{ tg.label }}</span>
+              </sc-for>
+            </div>
+            <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em">{{ c.meta }}</span>
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;padding:3px 8px;border-radius:9px;background:#000;color:#d9d9d9">{{ c.statusLabel }}</span>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ══ SPOT DETAIL ══ -->
+    <sc-if value="{{ onSpot }}" hint-placeholder-val="{{ false }}">
+    <div class="sk-scroll" style="position:absolute;inset:0;overflow:auto;background:#000;padding:12px 12px 20px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div onClick="{{ back }}" class="sk-tap" style="width:44px;height:44px;border-radius:22px;background:#d9d9d9;color:#000;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:20px;line-height:1">‹</div>
+        <div style="flex:1"></div>
+        <div class="sk-tap" style="display:flex;align-items:center;height:44px;padding:0 16px;border-radius:22px;background:#000;border:2px solid #d9d9d9;color:#d9d9d9;font-family:Freeman,system-ui,sans-serif;font-size:16px">save</div>
+        <div onClick="{{ openEdit }}" class="sk-tap" style="display:flex;align-items:center;height:44px;padding:0 16px;border-radius:22px;background:#d9d9d9;color:#000;font-family:Freeman,system-ui,sans-serif;font-size:16px">edit</div>
+      </div>
+
+      <div style="height:220px;border-radius:19px;background:#d9d9d9 url({{ spot.photo }}) center / cover no-repeat;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding:12px">
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;padding:4px 9px;border-radius:10px;background:#000;color:#d9d9d9">{{ spot.photoLabel }}</span>
+        <div onClick="{{ openSpotCamera }}" class="sk-tap" style="display:flex;align-items:center;gap:7px;padding:6px 12px;border-radius:15px;background:#d9d9d9;color:#000">
+          <div class="sk-ico" style="width:18px;height:17px;-webkit-mask-image:url(./assets/icon-bubble.svg);mask-image:url(./assets/icon-bubble.svg)"></div>
+          <span style="font-family:Freeman,system-ui,sans-serif;font-size:14px">add photo</span>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h2 style="margin:0;font-family:'Fugaz One',system-ui,sans-serif;font-size:30px;line-height:1.05;color:#fff">{{ spot.name }}</h2>
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">{{ spot.coords }} · {{ spot.by }} · {{ spot.edits }} edits</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+          <sc-for list="{{ spotTags }}" as="tg" hint-placeholder-count="2">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;padding:4px 10px;border-radius:11px;border:2px solid #d9d9d9;color:#d9d9d9">{{ tg.label }}</span>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="3">
+          <div onClick="{{ s.pick }}" class="sk-tap" style="flex:1;padding:11px 8px;border-radius:20px;text-align:center;background:{{ s.bg }};color:{{ s.fg }};border:2px solid {{ s.br }}">
+            <div style="font-family:Freeman,system-ui,sans-serif;font-size:16px;line-height:1">{{ s.label }}</div>
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.09em;margin-top:4px">{{ s.votes }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <sc-for list="{{ specs }}" as="sp" hint-placeholder-count="4">
+          <div style="padding:11px 13px;border-radius:20px;background:#d9d9d9;color:#000">
+            <div style="font-size:9px;text-transform:uppercase;letter-spacing:.11em">{{ sp.k }}</div>
+            <div style="font-family:Freeman,system-ui,sans-serif;font-size:16px;line-height:1.15;margin-top:3px">{{ sp.v }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="padding:14px 16px;border-radius:20px;background:#d9d9d9;color:#000">
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.11em">the beta</div>
+        <p style="margin:6px 0 0;font-size:13px;line-height:1.5;text-wrap:pretty">{{ spot.beta }}</p>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.09em;margin-top:8px">edited 4d ago by {{ spot.lastEditor }}</div>
+      </div>
+
+      <div onClick="{{ goThread }}" class="sk-tap" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-radius:20px;background:#000;border:2px solid #d9d9d9">
+        <div class="sk-ico" style="width:26px;height:25px;-webkit-mask-image:url(./assets/icon-bubble.svg);mask-image:url(./assets/icon-bubble.svg)"></div>
+        <span style="flex:1;font-family:Freeman,system-ui,sans-serif;font-size:17px">spot thread</span>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">{{ spotThreadMeta }}</span>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ ADD / EDIT ══ -->
+    <sc-if value="{{ onForm }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.72);display:flex;flex-direction:column;justify-content:flex-end">
+      <div class="sk-scroll" style="background:#000;border-top:2px solid #d9d9d9;border-radius:24px 24px 0 0;padding:14px 14px 18px;display:flex;flex-direction:column;gap:13px;max-height:100%;overflow:auto">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+          <h3 style="margin:0;font-family:'Fugaz One',system-ui,sans-serif;font-size:24px;line-height:1;color:#fff">{{ formTitle }}</h3>
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">{{ formCoords }}</span>
+        </div>
+
+        <input value="{{ fName }}" onChange="{{ setName }}" placeholder="name it" style="width:100%;height:55px;padding:0 18px;border:0;border-radius:27.5px;background:#d9d9d9;color:#000;font-family:Freeman,system-ui,sans-serif;font-size:19px;outline:none">
+
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ tagOpts }}" as="k" hint-placeholder-count="8">
+            <div onClick="{{ k.pick }}" class="sk-tap" style="display:flex;align-items:center;height:42px;padding:0 16px;border-radius:20px;background:{{ k.bg }};color:{{ k.fg }};border:2px solid {{ k.br }};font-family:Freeman,system-ui,sans-serif;font-size:16px">{{ k.label }}</div>
+          </sc-for>
+        </div>
+
+        <div class="sk-scroll" style="display:flex;gap:9px;overflow-x:auto;scrollbar-width:none">
+          <sc-for list="{{ shots }}" as="sh" hint-placeholder-count="1">
+            <div style="flex:none;position:relative;width:86px;height:86px;border-radius:18px;background:#7c7c7c url({{ sh.src }}) center / cover no-repeat">
+              <div onClick="{{ sh.remove }}" class="sk-tap" style="position:absolute;top:-6px;right:-6px;width:26px;height:26px;border-radius:13px;background:#000;color:#d9d9d9;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:14px;line-height:1">×</div>
+            </div>
+          </sc-for>
+          <div onClick="{{ openCamera }}" class="sk-tap" style="flex:none;width:86px;height:86px;border-radius:18px;border:2px dashed #7c7c7c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d9d9d9">
+            <div class="sk-ico" style="width:26px;height:25px;-webkit-mask-image:url(./assets/icon-bubble.svg);mask-image:url(./assets/icon-bubble.svg)"></div>
+            <span style="font-size:9px;text-transform:uppercase;letter-spacing:.1em">shoot it</span>
+          </div>
+        </div>
+
+        <textarea value="{{ fBeta }}" onChange="{{ setBeta }}" placeholder="surface, run-up, bust risk, best hours" style="width:100%;min-height:84px;resize:none;padding:14px 16px;border:0;border-radius:20px;background:#d9d9d9;color:#000;font-family:Inter,system-ui,sans-serif;font-size:13px;line-height:1.5;outline:none"></textarea>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:20px;border:2px solid #d9d9d9">
+          <div>
+            <div style="font-family:Freeman,system-ui,sans-serif;font-size:17px">crew only</div>
+            <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">hidden from the map</div>
+          </div>
+          <div onClick="{{ togglePrivate }}" class="sk-tap" style="width:56px;height:32px;border-radius:16px;padding:3px;background:{{ privBg }};border:2px solid #d9d9d9;display:flex;justify-content:{{ privPos }}">
+            <div style="width:22px;height:22px;border-radius:11px;background:{{ privKnob }}"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:9px">
+          <div onClick="{{ cancelForm }}" class="sk-tap" style="display:flex;align-items:center;height:52px;padding:0 20px;border-radius:26px;border:2px solid #d9d9d9;color:#d9d9d9;font-family:Freeman,system-ui,sans-serif;font-size:17px">nah</div>
+          <div onClick="{{ saveSpot }}" class="sk-tap" style="flex:1;height:52px;border-radius:26px;background:#d9d9d9;color:#000;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:19px">{{ saveLabel }}</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ FORUM ══ -->
+    <sc-if value="{{ onForum }}" hint-placeholder-val="{{ false }}">
+    <div class="sk-scroll" style="position:absolute;inset:0;overflow:auto;background:#000;padding:12px 12px 18px;display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="margin:0;flex:1;font-family:'Fugaz One',system-ui,sans-serif;font-size:28px;line-height:1;color:#fff">the yard</h2>
+        <span style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">2,431 heads</span>
+      </div>
+      <div class="sk-scroll" style="flex:none;display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none">
+        <sc-for list="{{ boards }}" as="b" hint-placeholder-count="5">
+          <div onClick="{{ b.pick }}" class="sk-tap" style="flex:none;display:flex;align-items:center;height:40px;padding:0 16px;border-radius:20px;background:{{ b.bg }};color:{{ b.fg }};border:2px solid {{ b.br }};font-family:Freeman,system-ui,sans-serif;font-size:16px">{{ b.label }}</div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ threads }}" as="t" hint-placeholder-count="5">
+        <div onClick="{{ t.open }}" class="sk-tap" style="padding:14px 16px;border-radius:20px;background:#d9d9d9;color:#000;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:10px;text-transform:uppercase;letter-spacing:.1em">
+            <span>{{ t.tag }}</span><span style="color:#7c7c7c">{{ t.when }}</span>
+          </div>
+          <div style="font-family:Freeman,system-ui,sans-serif;font-size:19px;line-height:1.15;text-wrap:pretty">{{ t.title }}</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em">{{ t.by }} · {{ t.replies }} replies · {{ t.likes }} up</div>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ══ THREAD ══ -->
+    <sc-if value="{{ onThread }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#000">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:12px">
+        <div onClick="{{ back }}" class="sk-tap" style="width:44px;height:44px;flex:none;border-radius:22px;background:#d9d9d9;color:#000;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:20px;line-height:1">‹</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:Freeman,system-ui,sans-serif;font-size:18px;line-height:1.1;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ thread.title }}</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#7c7c7c">{{ thread.tag }} · {{ thread.replies }} replies</div>
+        </div>
+      </div>
+      <div class="sk-scroll" style="flex:1;overflow:auto;padding:0 12px 12px;display:flex;flex-direction:column;gap:10px">
+        <sc-for list="{{ posts }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;gap:10px;padding:13px 15px;border-radius:20px;background:{{ p.bg }};color:{{ p.fg }}">
+            <div style="width:43px;height:43px;flex:none;border-radius:50%;background:#7c7c7c url({{ p.av }}) center / cover no-repeat"></div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:8px">
+                <span style="font-family:Freeman,system-ui,sans-serif;font-size:16px">{{ p.who }}</span>
+                <span style="font-family:'Stint Ultra Condensed',system-ui,sans-serif;font-size:17px;letter-spacing:.02em;opacity:.7">{{ p.when }}</span>
+                <sc-if value="{{ p.op }}" hint-placeholder-val="{{ false }}"><span style="font-size:9px;text-transform:uppercase;letter-spacing:.1em;padding:2px 7px;border-radius:8px;background:#000;color:#d9d9d9">op</span></sc-if>
+              </div>
+              <div style="font-size:13px;line-height:1.5;margin-top:3px;text-wrap:pretty">{{ p.text }}</div>
+              <sc-if value="{{ p.spot }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ p.openSpot }}" class="sk-tap" style="margin-top:8px;display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:16px;background:#000;color:#d9d9d9">
+                  <div class="sk-ico" style="width:11px;height:28px;-webkit-mask-image:url(./assets/icon-pin.svg);mask-image:url(./assets/icon-pin.svg)"></div>
+                  <span style="font-family:Freeman,system-ui,sans-serif;font-size:14px">{{ p.spot }}</span>
+                </div>
+              </sc-if>
+              <div style="display:flex;align-items:center;gap:14px;margin-top:9px;color:{{ p.fg }}">
+                <div class="sk-tap" style="display:flex;align-items:center;gap:6px">
+                  <div class="sk-ico" style="width:22px;height:22px;-webkit-mask-image:url(./assets/icon-like.svg);mask-image:url(./assets/icon-like.svg)"></div>
+                  <span style="font-size:10px;letter-spacing:.1em">{{ p.likes }}</span>
+                </div>
+                <div class="sk-ico sk-tap" style="width:22.857px;height:20px;-webkit-mask-image:url(./assets/icon-comment.svg);mask-image:url(./assets/icon-comment.svg)"></div>
+                <div class="sk-ico sk-tap" style="width:27.04px;height:10.509px;-webkit-mask-image:url(./assets/icon-share.svg);mask-image:url(./assets/icon-share.svg)"></div>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:none;display:flex;gap:9px;padding:0 12px 12px">
+        <input value="{{ draftReply }}" onChange="{{ setReply }}" placeholder="say something" style="flex:1;min-width:0;height:52px;padding:0 18px;border:0;border-radius:26px;background:#d9d9d9;color:#000;font-family:Freeman,system-ui,sans-serif;font-size:17px;outline:none">
+        <div onClick="{{ sendReply }}" class="sk-tap" style="display:flex;align-items:center;height:52px;padding:0 18px;border-radius:26px;border:2px solid #d9d9d9;color:#d9d9d9;font-family:'Fugaz One',system-ui,sans-serif;font-size:17px">post</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ MESSAGES ══ -->
+    <sc-if value="{{ onMessages }}" hint-placeholder-val="{{ false }}">
+    <div class="sk-scroll" style="position:absolute;inset:0;overflow:auto;background:#000;padding:12px 12px 18px;display:flex;flex-direction:column;gap:9px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="margin:0;flex:1;font-family:'Fugaz One',system-ui,sans-serif;font-size:28px;line-height:1;color:#fff">dm's</h2>
+        <div class="sk-tap" style="width:44px;height:44px;border-radius:22px;background:#d9d9d9;color:#000;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:22px">+</div>
+      </div>
+      <sc-for list="{{ convos }}" as="m" hint-placeholder-count="6">
+        <div class="sk-tap" style="display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:20px;background:{{ m.bg }};color:{{ m.fg }}">
+          <div style="width:44px;height:44px;flex:none;border-radius:50%;background:#7c7c7c url({{ m.av }}) center / cover no-repeat"></div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <span style="flex:1;font-family:Freeman,system-ui,sans-serif;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.who }}</span>
+              <span style="font-size:10px;text-transform:uppercase;letter-spacing:.09em;opacity:.6">{{ m.when }}</span>
+            </div>
+            <div style="font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.85">{{ m.last }}</div>
+          </div>
+          <sc-if value="{{ m.unread }}" hint-placeholder-val="{{ false }}"><span style="width:10px;height:10px;flex:none;border-radius:5px;background:#000"></span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ══ CAMERA ══ -->
+    <sc-if value="{{ onCamera }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#000;display:flex;flex-direction:column">
+      <div style="flex:1;position:relative;margin:12px;border-radius:20px;overflow:hidden;background:#7c7c7c">
+        <video ref="{{ videoRef }}" autoPlay="{{ true }}" muted="{{ true }}" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.15)"></video>
+        <sc-if value="{{ camFallback }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;background:#7c7c7c url(./assets/ph-8.png) center / cover no-repeat;filter:grayscale(1) contrast(1.1)"></div>
+        </sc-if>
+        <div style="position:absolute;inset:0;pointer-events:none">
+          <div style="position:absolute;left:16px;top:16px;width:26px;height:26px;border-left:3px solid #d9d9d9;border-top:3px solid #d9d9d9"></div>
+          <div style="position:absolute;right:16px;top:16px;width:26px;height:26px;border-right:3px solid #d9d9d9;border-top:3px solid #d9d9d9"></div>
+          <div style="position:absolute;left:16px;bottom:16px;width:26px;height:26px;border-left:3px solid #d9d9d9;border-bottom:3px solid #d9d9d9"></div>
+          <div style="position:absolute;right:16px;bottom:16px;width:26px;height:26px;border-right:3px solid #d9d9d9;border-bottom:3px solid #d9d9d9"></div>
+        </div>
+        <div style="position:absolute;left:16px;top:16px;right:16px;display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <span style="font-size:10px;text-transform:uppercase;letter-spacing:.11em;padding:5px 10px;border-radius:11px;background:#000;color:#d9d9d9">{{ camLabel }}</span>
+          <div onClick="{{ closeCamera }}" class="sk-tap" style="width:38px;height:38px;border-radius:19px;background:#000;color:#d9d9d9;display:flex;align-items:center;justify-content:center;font-family:'Fugaz One',system-ui,sans-serif;font-size:18px;line-height:1">×</div>
+        </div>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;gap:14px;padding:0 20px 18px">
+        <div class="sk-scroll" style="flex:1;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none">
+          <sc-for list="{{ shots }}" as="sh" hint-placeholder-count="1">
+            <div style="flex:none;width:54px;height:54px;border-radius:12px;background:#7c7c7c url({{ sh.src }}) center / cover no-repeat"></div>
+          </sc-for>
+        </div>
+        <div onClick="{{ shutter }}" class="sk-tap" style="width:76px;height:76px;flex:none;border-radius:38px;background:#d9d9d9;border:4px solid #000;box-shadow:0 0 0 3px #d9d9d9"></div>
+        <div onClick="{{ doneCamera }}" class="sk-tap" style="flex:1;display:flex;justify-content:flex-end">
+          <span style="font-family:Freeman,system-ui,sans-serif;font-size:17px;color:#d9d9d9">done</span>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+  <!-- ══ NAV ══ -->
+  <div style="flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 26px 22px;background:#000">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+      <div onClick="{{ t.pick }}" class="sk-tap" style="display:flex;flex-direction:column;align-items:center;gap:6px;color:{{ t.fg }}">
+        <div style="height:39px;display:flex;align-items:center;justify-content:center">
+          <div class="sk-ico" style="width:{{ t.w }};height:{{ t.h }};-webkit-mask-image:{{ t.mask }};mask-image:{{ t.mask }}"></div>
+        </div>
+        <span style="font-size:9px;text-transform:uppercase;letter-spacing:.11em">{{ t.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:450,&quot;height&quot;:910}}">
+const G = '#d9d9d9', K = '#000', MID = '#7c7c7c';
+const STATUS = { ok: 'skateable', watch: 'bust risk', closed: 'knobbed' };
+const TAGS = ['ledge', 'hubba ledge', 'rail', 'bank', 'gap', 'manny pad', 'slappy', 'curb', 'park', 'hangout', 'dork stuff'];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'map', tab: 'map', sel: 's1', filter: 'all', board: 'All',
+    placing: false, draft: null, editing: false, mapLayer: 'sat',
+    fName: '', fTags: ['ledge'], fBeta: '', fPriv: false,
+    threadId: 't1', reply: '',
+    camera: false, camTarget: null, camError: false, shots: [],
+    spots: [
+      { id: 's1', name: 'Donaumarkt ledges', tags: ['ledge', 'slappy', 'hangout'], lat: 49.02255, lng: 12.09985, st: 'ok', by: 'lena.h', edits: 12, coords: '49.02255 N · 12.09985 E', confirmed: '2 days ago', lastEditor: 'basti_rgb',
+        beta: 'Four granite ledges by the museum, knee height, waxed. Smooth run-up from the river side; the south end has a drain you will feel. Museum staff only mind it during opening hours.',
+        specs: [['surface', 'polished granite'], ['run-up', '12 m, flat'], ['best hours', 'after 18:00'], ['lighting', 'street-lit']] },
+      { id: 's2', name: 'Dultplatz banks', tags: ['bank', 'gap'], lat: 49.02594, lng: 12.09772, st: 'watch', by: 'j_wagner', edits: 7, coords: '49.02594 N · 12.09772 E', confirmed: '5 hours ago', lastEditor: 'lena.h',
+        beta: 'Two brick banks into a flat wall in Stadtamhof. Bricks loose at the top right. Fenced off for the Dult and for markets — check the board before you ride out.',
+        specs: [['surface', 'brick, patched'], ['run-up', '6 m, downhill'], ['best hours', 'weekends'], ['lighting', 'none']] },
+      { id: 's3', name: 'Arnulfsplatz rail', tags: ['rail', 'curb'], lat: 49.01924, lng: 12.08927, st: 'closed', by: 'tobi.k', edits: 21, coords: '49.01924 N · 12.08927 E', confirmed: 'yesterday', lastEditor: 'tobi.k',
+        beta: 'Skate stoppers welded on in March. Kept here for the record and for anyone tracking the city\u2019s stoppers — do not ride out for it.',
+        specs: [['surface', 'round steel'], ['run-up', '8 m'], ['best hours', '—'], ['lighting', 'overhead']] },
+      { id: 's4', name: 'Jahninsel bench + tap', tags: ['hangout', 'dork stuff'], lat: 49.02261, lng: 12.09231, st: 'ok', by: 'community', edits: 3, coords: '49.02261 N · 12.09231 E', confirmed: 'last week', lastEditor: 'mira.s',
+        beta: 'Drinking tap runs from April to October, benches and shade under the trees. Default meet point before a session on the island.',
+        specs: [['type', 'tap + benches'], ['access', 'public'], ['best hours', 'daylight'], ['lighting', 'park lamp']] },
+      { id: 's5', name: 'Ostentor gap', tags: ['gap', 'manny pad'], lat: 49.01836, lng: 12.10322, st: 'ok', by: 'basti_rgb', edits: 9, coords: '49.01836 N · 12.10322 E', confirmed: '3 days ago', lastEditor: 'basti_rgb',
+        beta: 'Three-stair gap over a planter, landing resurfaced in June. Bikes cut through from the Ostengasse — post a spotter.',
+        specs: [['surface', 'asphalt'], ['run-up', '15 m'], ['best hours', 'sunday am'], ['lighting', 'street-lit']] },
+    ],
+    threads: [
+      { id: 't1', tag: 'City', title: 'stoppers in the altstadt — what is still standing?', by: 'tobi.k', when: '2h', replies: 34, likes: 121 },
+      { id: 't2', tag: 'Gear', title: 'wheels for altstadt cobbles — soft enough, still fast?', by: 'mira.s', when: '5h', replies: 18, likes: 44 },
+      { id: 't3', tag: 'Sessions', title: 'saturday 10:00, donaumarkt — all levels', by: 'lena.h', when: '1d', replies: 52, likes: 88 },
+      { id: 't4', tag: 'Builds', title: 'diy quarter pipe under the nibelungenbrücke: permit or not?', by: 'basti_rgb', when: '2d', replies: 27, likes: 60 },
+      { id: 't5', tag: 'Buy / sell', title: 'selling an 8.25 complete, barely ridden', by: 'j_wagner', when: '3d', replies: 6, likes: 9 },
+    ],
+    posts: [
+      { who: 'tobi.k', when: '2h', op: true, likes: 41, text: 'Rode a loop from the Steinerne Brücke down to the Ostentor. Arnulfsplatz is stoppered, the ledges at the museum survived. Adding what I saw to the map now.', spot: 'Arnulfsplatz rail' },
+      { who: 'lena.h', when: '1h', likes: 12, text: 'Donaumarkt is untouched. Re-confirmed the status this morning.' },
+      { who: 'mira.s', when: '52m', likes: 5, text: 'Anyone checked the banks? Last time there was a fence up for the market.' },
+      { who: 'basti_rgb', when: '30m', likes: 8, text: 'Fence is down. Bricks still loose top right, so I marked it bust risk rather than knobbed.', spot: 'Dultplatz banks' },
+    ],
+    convos: [
+      { who: 'lena.h', when: '9:41', last: 'donaumarkt at 10, bring the wide angle', unread: true },
+      { who: 'regensburg ledges crew', when: '9:02', last: 'basti_rgb: added three photos to ostentor gap', unread: true },
+      { who: 'tobi.k', when: 'yst', last: 'sent you the stopper overlay for the altstadt' },
+      { who: 'mira.s', when: 'yst', last: 'jahninsel is a good meet point, agreed' },
+      { who: 'j_wagner', when: 'mon', last: 'board is still available if you want it' },
+      { who: 'mods', when: 'sun', last: 'your edit to arnulfsplatz rail was approved' },
+    ],
+  };
+
+  mapRef = React.createRef();
+  videoRef = React.createRef();
+
+  startCam() {
+    if (this.stream) return;
+    const md = navigator.mediaDevices;
+    if (!md || !md.getUserMedia) { this.setState({ camError: true }); return; }
+    md.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(st => {
+      this.stream = st;
+      if (this.videoRef.current) this.videoRef.current.srcObject = st;
+      this.setState({ camError: false });
+    }).catch(() => this.setState({ camError: true }));
+  }
+
+  stopCam() {
+    if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+    if (this.videoRef.current) this.videoRef.current.srcObject = null;
+  }
+
+  grab() {
+    const v = this.videoRef.current;
+    if (!this.stream || !v || !v.videoWidth) return './assets/ph-8.png';
+    const c = document.createElement('canvas');
+    const w = 720, h = Math.round(w * v.videoHeight / v.videoWidth);
+    c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    g.filter = 'grayscale(1) contrast(1.15)';
+    g.drawImage(v, 0, 0, w, h);
+    return c.toDataURL('image/jpeg', 0.82);
+  }
+
+  componentDidMount() {
+    this.onMsg = ev => {
+      const f = this.mapRef.current;
+      if (!f || ev.source !== f.contentWindow) return;
+      const d = ev.data || {};
+      if (d.sm === 'ready') { this.mapReady = true; this.pushSpots(); }
+      if (d.sm === 'pin') this.setState({ screen: 'spot', tab: 'map', sel: d.id });
+      if (d.sm === 'tap' && this.state.placing) this.setState({ placing: false, screen: 'form', draft: { lat: d.lat, lng: d.lng } });
+    };
+    window.addEventListener('message', this.onMsg);
+  }
+  componentWillUnmount() { window.removeEventListener('message', this.onMsg); this.stopCam(); }
+  componentDidUpdate() {
+    this.pushSpots();
+    if (this.state.camera) this.startCam(); else this.stopCam();
+  }
+
+  pushSpots() {
+    const f = this.mapRef.current;
+    if (!f || !this.mapReady || !f.contentWindow) return;
+    const s = this.state;
+    const spots = s.spots.filter(x => s.filter === 'all' || (x.tags || []).indexOf(s.filter) > -1).map(x => ({
+      id: x.id, name: x.name.split(' ')[0].toLowerCase(), lat: x.lat, lng: x.lng,
+      badge: String(s.spots.indexOf(x) + 1), selected: x.id === s.sel,
+    }));
+    f.contentWindow.postMessage({ sm: 'spots', spots, mode: 'pins' }, '*');
+    f.contentWindow.postMessage({ sm: 'layer', value: s.mapLayer }, '*');
+  }
+
+  dist(x) {
+    const R = 6371, la = 49.0205, lo = 12.0965;
+    const dLa = (x.lat - la) * Math.PI / 180, dLo = (x.lng - lo) * Math.PI / 180;
+    const a = Math.sin(dLa / 2) ** 2 + Math.cos(la * Math.PI / 180) * Math.cos(x.lat * Math.PI / 180) * Math.sin(dLo / 2) ** 2;
+    return (2 * R * Math.asin(Math.sqrt(a))).toFixed(1) + ' km';
+  }
+  coordStr(lat, lng) { return lat.toFixed(5) + ' N · ' + lng.toFixed(5) + ' E'; }
+  av(i) { return ['./assets/ph-2.png', './assets/ph-4.png', './assets/ph-3.jpg', './assets/ph-6.jpg', './assets/ph-1.jpg', './assets/ph-7.png'][i % 6]; }
+  photo(i) { return ['./assets/ph-5.png', './assets/ph-1.jpg', './assets/ph-7.png', './assets/ph-6.jpg', './assets/ph-3.jpg'][i % 5]; }
+  chip(on) { return on ? { bg: G, fg: K, br: G } : { bg: K, fg: G, br: MID }; }
+  go(screen, extra) { this.setState(Object.assign({ screen }, extra || {})); }
+
+  renderVals() {
+    const s = this.state;
+    const spot = s.spots.find(x => x.id === s.sel) || s.spots[0];
+    const visible = s.spots.filter(x => s.filter === 'all' || (x.tags || []).indexOf(s.filter) > -1);
+    const openSpot = id => this.go('spot', { sel: id });
+    const thread = s.threads.find(t => t.id === s.threadId) || s.threads[0];
+
+    return {
+      mapRef: this.mapRef,
+      onMap: s.screen === 'map' || s.screen === 'form',
+      onSpots: s.screen === 'spots',
+      spotCount: visible.length + ' spots',
+      list: visible.map(p => ({
+        name: p.name, photo: (p.photos || [])[0] || this.photo(s.spots.indexOf(p)),
+        tags: (p.tags || []).map(t => ({ label: t })),
+        statusLabel: STATUS[p.st], meta: this.dist(p) + ' · ' + p.edits + ' edits',
+        open: () => openSpot(p.id),
+      })),
+      spotTags: (spot.tags || []).map(t => ({ label: t })),
+      onSpot: s.screen === 'spot', onForm: s.screen === 'form',
+      onForum: s.screen === 'forum', onThread: s.screen === 'thread', onMessages: s.screen === 'messages',
+      onCamera: s.camera,
+      videoRef: this.videoRef,
+      camFallback: s.camError,
+      camLabel: s.camError ? 'camera blocked — demo frame' : (s.camTarget ? 'adding to ' + (s.spots.find(x => x.id === s.camTarget) || {}).name : 'new spot'),
+      shots: s.shots.map((src, i) => ({ src, remove: () => this.setState({ shots: s.shots.filter((_, j) => j !== i) }) })),
+      openCamera: () => this.setState({ camera: true, camTarget: null }),
+      openSpotCamera: () => this.setState({ camera: true, camTarget: spot.id, shots: [] }),
+      closeCamera: () => this.setState({ camera: false }),
+      shutter: () => {
+        const src = this.grab();
+        if (s.camTarget) {
+          this.setState({
+            spots: s.spots.map(x => x.id === s.camTarget
+              ? Object.assign({}, x, { photos: [src].concat(x.photos || []), edits: x.edits + 1, lastEditor: 'you' }) : x),
+            shots: [src].concat(s.shots),
+          });
+        } else {
+          this.setState({ shots: [src].concat(s.shots) });
+        }
+      },
+      doneCamera: () => this.setState({ camera: false }),
+      placing: s.placing,
+      layerLabel: s.mapLayer === 'sat' ? 'street' : 'satellite',
+      toggleLayer: () => this.setState({ mapLayer: s.mapLayer === 'sat' ? 'street' : 'sat' }),
+
+      filters: ['all'].concat(TAGS).map(f => Object.assign({ label: f, pick: () => this.setState({ filter: f }) }, this.chip(s.filter === f))),
+      rail: visible.map(p => ({
+        name: p.name, photoLabel: (p.tags || []).join(' · '), photo: (p.photos || [])[0] || this.photo(s.spots.indexOf(p)),
+        statusLabel: STATUS[p.st], meta: this.dist(p) + ' · ' + p.edits + ' edits',
+        open: () => openSpot(p.id),
+      })),
+
+      spot: Object.assign({}, spot, {
+        photoLabel: ((spot.photos || []).length + 3) + ' uploads',
+        photo: (spot.photos || [])[0] || this.photo(s.spots.indexOf(spot)),
+      }),
+      specs: spot.specs.map(([k, v]) => ({ k, v })),
+      spotThreadMeta: s.posts.length + ' posts',
+      statuses: Object.keys(STATUS).map(k => {
+        const on = spot.st === k;
+        return {
+          label: STATUS[k], votes: on ? 'confirmed by you' : 'tap to switch',
+          bg: on ? G : K, fg: on ? K : G, br: on ? G : MID,
+          pick: () => this.setState({ spots: s.spots.map(x => x.id === spot.id ? Object.assign({}, x, { st: k, confirmed: 'just now', edits: x.edits + 1 }) : x) }),
+        };
+      }),
+
+      formTitle: s.editing ? 'fix it up' : 'new spot',
+      saveLabel: s.editing ? 'save it' : 'put it up',
+      formCoords: s.draft ? this.coordStr(s.draft.lat, s.draft.lng) : spot.coords,
+      fName: s.fName, fBeta: s.fBeta,
+      setName: ev => this.setState({ fName: ev.target.value }),
+      setBeta: ev => this.setState({ fBeta: ev.target.value }),
+      tagOpts: TAGS.map(k => {
+        const on = s.fTags.indexOf(k) > -1;
+        return Object.assign({ label: k, pick: () => this.setState({ fTags: on ? s.fTags.filter(x => x !== k) : s.fTags.concat([k]) }) }, this.chip(on));
+      }),
+      privBg: s.fPriv ? G : K, privKnob: s.fPriv ? K : MID, privPos: s.fPriv ? 'flex-end' : 'flex-start',
+      togglePrivate: () => this.setState({ fPriv: !s.fPriv }),
+      cancelForm: () => this.setState({ screen: s.editing ? 'spot' : 'map', draft: null, editing: false }),
+      openEdit: () => this.setState({ screen: 'form', editing: true, fName: spot.name, fTags: (spot.tags || []).slice(), fBeta: spot.beta, shots: [] }),
+      startPlace: () => this.setState({ screen: 'map', tab: 'map', placing: true, editing: false, fName: '', fBeta: '', fTags: ['ledge'], fPriv: false, shots: [], camTarget: null }),
+      cancelPlace: () => this.setState({ placing: false }),
+      saveSpot: () => {
+        if (s.editing) {
+          this.setState({ screen: 'spot', editing: false, shots: [],
+            spots: s.spots.map(x => x.id === spot.id ? Object.assign({}, x, { name: s.fName || x.name, tags: s.fTags.slice(), beta: s.fBeta || x.beta, edits: x.edits + 1, lastEditor: 'you', photos: s.shots.concat(x.photos || []) }) : x) });
+        } else {
+          const id = 'n' + Date.now();
+          const d = s.draft || { lat: 49.0205, lng: 12.0965 };
+          this.setState({ screen: 'spot', sel: id, draft: null, shots: [],
+            spots: s.spots.concat([{ id, name: s.fName || 'untitled spot', tags: s.fTags.slice(), lat: d.lat, lng: d.lng, st: 'ok', by: 'you', edits: 1,
+              photos: s.shots.slice(),
+              coords: this.coordStr(d.lat, d.lng), confirmed: 'just now', lastEditor: 'you',
+              beta: s.fBeta || 'no notes yet — add the surface, run-up and bust risk so the next person knows.',
+              specs: [['surface', '—'], ['run-up', '—'], ['best hours', '—'], ['lighting', '—']] }]) });
+        }
+      },
+
+      boards: ['All', 'City', 'Gear', 'Sessions', 'Builds', 'Buy / sell']
+        .map(b => Object.assign({ label: b.toLowerCase(), pick: () => this.setState({ board: b }) }, this.chip(s.board === b))),
+      threads: s.threads.filter(t => s.board === 'All' || t.tag === s.board).map(t => Object.assign({}, t, { open: () => this.go('thread', { threadId: t.id }) })),
+      thread,
+      posts: s.posts.map((p, i) => Object.assign({}, p, {
+        av: this.av(i), op: !!p.op, spot: p.spot || false,
+        bg: p.op ? G : K, fg: p.op ? K : G,
+        openSpot: () => { const m = s.spots.find(x => x.name === p.spot); if (m) openSpot(m.id); },
+      })),
+      draftReply: s.reply,
+      setReply: ev => this.setState({ reply: ev.target.value }),
+      sendReply: () => { if (s.reply.trim()) this.setState({ reply: '', posts: s.posts.concat([{ who: 'you', when: 'now', likes: 0, text: s.reply.trim() }]) }); },
+      convos: s.convos.map((m, i) => ({ who: m.who, when: m.when, last: m.last, unread: !!m.unread, av: this.av(i + 1), bg: m.unread ? G : K, fg: m.unread ? K : G })),
+
+      back: () => this.setState({ screen: s.screen === 'thread' ? 'forum' : (s.tab === 'spots' ? 'spots' : 'map') }),
+      goThread: () => this.go('thread', { threadId: 't1' }),
+      tabs: [
+        { key: 'you', label: 'you', icon: 'skull', w: '39px', h: '39px', screen: 'map' },
+        { key: 'inbox', label: 'dm', icon: 'spray', w: '16.325px', h: '39px', screen: 'messages' },
+        { key: 'spots', label: 'spots', icon: 'board', w: '69.668px', h: '10.816px', screen: 'spots' },
+        { key: 'map', label: 'map', icon: 'pin', w: '15px', h: '39px', screen: 'map' },
+        { key: 'forum', label: 'yard', icon: 'bubble', w: '41.143px', h: '39px', screen: 'forum' },
+      ].map(t => ({
+        label: t.label, w: t.w, h: t.h, mask: 'url(./assets/icon-' + t.icon + '.svg)',
+        fg: s.tab === t.key ? '#fff' : MID,
+        pick: () => this.setState({ tab: t.key, screen: t.screen }),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>

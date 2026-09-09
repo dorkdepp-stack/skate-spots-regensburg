@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="./industry.css">
+<link href="https://fonts.googleapis.com/css2?family=Freeman&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;height:100%;background:var(--color-bg)}
+  #map{position:absolute;inset:0;background:var(--color-bg)}
+  body.ink{background:#000}
+  body.ink #map,body.ink .leaflet-container{background:#000}
+  body.ink .leaflet-control-attribution{background:rgba(0,0,0,.72);color:#d9d9d9}
+  body.ink .leaflet-control-attribution a{color:#d9d9d9}
+  body.ink .sm-pin .lbl{background:#d9d9d9;border:0;border-radius:20px;color:#000;font-family:Freeman,system-ui,sans-serif;font-size:14px;height:30px;padding:0 12px}
+  body.ink .sm-pin.on .lbl{background:#fff;color:#000;outline:2px solid #d9d9d9;outline-offset:2px}
+  body.ink .sm-pin .num{font-family:Freeman,system-ui,sans-serif}
+  body.ink .sm-pin .stem{background:#d9d9d9;height:14px;width:2px}
+  .leaflet-container{font-family:var(--font-body);background:var(--color-bg)}
+  .leaflet-control-attribution{font-size:9px;background:color-mix(in srgb,var(--color-bg) 82%,transparent);border-radius:0}
+  .sm-pin{display:flex;flex-direction:column;align-items:center;cursor:pointer}
+  .sm-pin .lbl{display:flex;align-items:center;gap:6px;height:28px;padding:0 9px;white-space:nowrap;
+    border:1px solid var(--color-accent-600);background:var(--color-bg);color:var(--color-text);
+    box-shadow:var(--shadow-sm);font-size:12px;line-height:1}
+  .sm-pin.on .lbl{background:var(--color-accent);border-color:var(--color-accent);color:var(--color-bg)}
+  .sm-pin .num{font-family:var(--font-heading);font-weight:600;font-size:12px;letter-spacing:.06em}
+  .sm-pin .stem{width:1px;height:12px;background:var(--color-accent-600)}
+  .sm-pin.on .stem{background:var(--color-accent)}
+
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  if (location.search.indexOf('skin=ink') > -1) document.body.className = 'ink';
+  var CENTER = [49.0205, 12.0965], ZOOM = 15;
+
+  var map = L.map('map', { zoomControl: false, attributionControl: true }).setView(CENTER, ZOOM);
+
+  var sat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Imagery \u00a9 Esri, Maxar, Earthstar Geographics', maxZoom: 19
+  }).addTo(map);
+  var street = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '\u00a9 OpenStreetMap contributors', maxZoom: 19
+  });
+
+  var layer = L.layerGroup().addTo(map);
+
+  function pinHtml(s, mode) {
+    var label = mode === 'index'
+      ? '<span class="num">' + s.badge + '</span>'
+      : '<span class="num">' + s.badge + '</span><span>' + s.name + '</span>';
+    return '<div class="sm-pin' + (s.selected ? ' on' : '') + '"><div class="lbl">' + label + '</div><div class="stem"></div></div>';
+  }
+
+  function render(spots, mode) {
+    layer.clearLayers();
+    (spots || []).forEach(function (s) {
+      var w = mode === 'index' ? 34 : 34 + s.name.length * 7;
+      var icon = L.divIcon({ className: '', html: pinHtml(s, mode), iconSize: [w, 40], iconAnchor: [w / 2, 40] });
+      L.marker([s.lat, s.lng], { icon: icon })
+        .on('click', function () { parent.postMessage({ sm: 'pin', id: s.id }, '*'); })
+        .addTo(layer);
+    });
+  }
+
+  map.on('click', function (e) {
+    parent.postMessage({ sm: 'tap', lat: e.latlng.lat, lng: e.latlng.lng }, '*');
+  });
+
+  window.addEventListener('message', function (ev) {
+    var d = ev.data || {};
+    if (d.sm === 'spots') render(d.spots, d.mode);
+    if (d.sm === 'center') map.setView([d.lat, d.lng], d.zoom || map.getZoom());
+    if (d.sm === 'layer') setLayer(d.value);
+  });
+
+  function setLayer(v) {
+    if (v === 'street') { map.removeLayer(sat); street.addTo(map); }
+    else { map.removeLayer(street); sat.addTo(map); }
+  }
+
+  parent.postMessage({ sm: 'ready' }, '*');
+</script>
+</body>
+</html>

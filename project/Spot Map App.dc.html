@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<meta name="design_doc_mode" content="canvas">
+<link rel="stylesheet" href="./industry.css">
+<script src="_ds/industry-3da2a225-5763-4f32-8e6a-9edaf2ce78fb/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:var(--color-bg)}
+  .dv-turn{padding:40px 44px 34px;border-bottom:1px solid var(--color-divider);scroll-margin-top:16px}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 6px}
+  .dv-tid{font-family:var(--font-heading);font-weight:600;font-size:12px;letter-spacing:.08em;padding:2px 8px;background:var(--color-text);color:var(--color-bg);text-decoration:none}
+  .dv-tname{font-family:var(--font-heading);font-weight:600;font-size:15px;letter-spacing:.02em}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:34px;align-items:flex-start;margin-top:22px}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;width:440px;scroll-margin-top:16px}
+  .dv-oid{font-family:var(--font-heading);font-weight:600;font-size:12px;letter-spacing:.08em;padding:2px 7px;border:1px solid var(--color-accent);color:var(--color-accent);text-decoration:none}
+  .dv-olabel{display:flex;align-items:baseline;gap:9px;font-size:13px}
+  .dv-opt:target .dv-oid{background:var(--color-accent);color:var(--color-bg)}
+  .dv-next{margin:26px 0 0;font-size:12px;color:color-mix(in srgb,var(--color-text) 55%,transparent)}
+  a{color:var(--color-accent)}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t2">
+  <div class="dv-thd"><a class="dv-tid" href="#t2">2</a><span class="dv-tname">Same app, your Sharpie mockup style</span></div>
+  <p style="margin:0;max-width:74ch;font-size:14px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Rebuilt on the attached Nothing Phone 3a file: black ground, #d9d9d9 slabs at 20px radius, Fugaz One display over Freeman labels, hashtag filters, and the file's own nav icons (skull, spray, deck, pin, bubble) as masks. The map keeps real OSM geometry, inverted into the ink palette. Same flows as <a href="#1a">1a</a>.</p>
+  <div class="dv-opts">
+    <div class="dv-opt" id="2a" style="width:452px">
+      <div class="dv-olabel"><a class="dv-oid" href="#2a">2a</a><span>Ink · icon nav · hashtag filters</span></div><dc-import name="SpotApp Sharpie" hint-size="452px,910px"></dc-import>
+      
+    </div>
+  </div>
+  <p class="dv-next">Try next: "carry <a class="dv-oid" href="#2a">2a</a>'s type into <a class="dv-oid" href="#1a">1a</a>" · "make the spot detail full-bleed photo" · "add the profile screen from the mockup"</p>
+</section>
+
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Spot map — map UI &amp; navigation model</span></div>
+  <p style="margin:0;max-width:74ch;font-size:14px;line-height:1.55;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Industry system, mobile. Every frame is live: filter the map, tap a pin, change a spot's condition, drop a new spot (tap <strong>Add spot</strong> then tap the map), edit an existing one wiki-style, open a board and post a reply. <a href="#1a">1a</a> and <a href="#1c">1c</a> are the two navigation models; <a href="#1b">1b</a> is the same app on Android.</p>
+
+  <div class="dv-opts">
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a><span>iOS · tab bar · labelled pins + nearby rail</span></div>
+      <dc-import name="SpotApp" platform="ios" nav="tabs" map-mode="pins" city="{{ city }}" hint-size="440px,900px"></dc-import>
+    </div>
+
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a><span>Android · same model as <a class="dv-oid" href="#1a">1a</a></span></div>
+      <dc-import name="SpotApp" platform="android" nav="tabs" map-mode="pins" city="{{ city }}" hint-size="440px,900px"></dc-import>
+    </div>
+
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a><span>iOS · map-first, no tabs · numbered index sheet</span></div>
+      <dc-import name="SpotApp" platform="ios" nav="mapFirst" map-mode="index" city="{{ city }}" hint-size="440px,900px"></dc-import>
+    </div>
+  </div>
+
+  <p class="dv-next">Try next: "take <a class="dv-oid" href="#1c">1c</a> further — index sheet drags up to full list" · "add photo upload + moderation queue to the edit sheet" · "new directions for the forum"</p>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;city&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Regensburg, DE&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { city: this.props.city ?? 'Regensburg, DE' };
+  }
+}
+
+</script>
+</body>
+</html>

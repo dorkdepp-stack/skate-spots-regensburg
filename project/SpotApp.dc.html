@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="stylesheet" href="./industry.css">
+<script src="_ds/industry-3da2a225-5763-4f32-8e6a-9edaf2ce78fb/_ds_bundle.js"></script>
+<style>
+  input,textarea,button{font-family:var(--font-body)}
+  .sm-tap{cursor:pointer}
+  .sm-tap:active{opacity:.7}
+  .sm-scroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<x-import component-from-global-scope="{{ deviceName }}" from="./ios-frame.jsx ./android-frame.jsx" hint-size="402px,874px">
+<div class="sm-scroll" style="position:relative;width:100%;height:100%;display:flex;flex-direction:column;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);overflow:hidden">
+
+  <sc-if value="{{ isIOS }}" hint-placeholder-val="{{ true }}"><div style="flex:none;height:52px"></div></sc-if>
+
+  <div style="flex:1;position:relative;overflow:hidden">
+
+    <!-- ══ MAP ══ -->
+    <sc-if value="{{ onMap }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column">
+      <iframe ref="{{ mapRef }}" src="./map.html" title="Spot map" style="position:absolute;inset:0;width:100%;height:100%;border:0"></iframe>
+
+      <sc-if value="{{ placing }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;top:0;bottom:0;width:1px;background:var(--color-accent)"></div>
+          <div style="position:absolute;left:0;right:0;height:1px;background:var(--color-accent)"></div>
+          <div style="width:52px;height:52px;border:1px solid var(--color-accent)"></div>
+        </div>
+      </sc-if>
+
+      <!-- top chrome -->
+      <div style="position:relative;padding:10px 12px 0;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="blueprint" style="flex:1;display:flex;align-items:center;gap:8px;height:40px;padding:0 11px;background:var(--color-bg)">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.55"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+            <span style="font-size:13px;opacity:.55">{{ city }}</span>
+          </div>
+          <sc-if value="{{ mapFirst }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ goForum }}" class="btn btn-secondary btn-icon sm-tap" style="background:var(--color-bg);flex:none">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12a8 8 0 0 1-8 8H4l2.2-3A8 8 0 1 1 21 12z"></path></svg>
+            </div>
+            <div onClick="{{ goMessages }}" class="btn btn-secondary btn-icon sm-tap" style="background:var(--color-bg);flex:none;position:relative">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18v12H3z"></path><path d="M3 7l9 6 9-6"></path></svg>
+              <span style="position:absolute;top:-4px;right:-4px;width:8px;height:8px;background:var(--color-accent)"></span>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display:flex;gap:6px;overflow:hidden">
+          <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+            <div onClick="{{ f.pick }}" class="tag sm-tap" style="flex:none;height:26px;background:{{ f.bg }};color:{{ f.fg }};border:1px solid {{ f.br }}">{{ f.label }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:1"></div>
+
+      <!-- how spots surface -->
+      <sc-if value="{{ tabsNav }}" hint-placeholder-val="{{ true }}">
+        <div style="position:relative;display:flex;justify-content:flex-end;padding:0 12px 10px">
+          <div onClick="{{ startPlace }}" class="btn btn-primary blueprint sm-tap" style="height:44px;padding:0 14px">
+            <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"></path></svg>
+            Add spot
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ modePins }}" hint-placeholder-val="{{ true }}">
+        <div class="sm-scroll" style="position:relative;padding:0 12px 12px;display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none">
+          <sc-for list="{{ rail }}" as="c" hint-placeholder-count="2">
+            <div onClick="{{ c.open }}" class="card blueprint sm-tap" style="flex:none;width:206px;background:var(--color-bg);gap:7px;scroll-snap-align:start">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="height:72px;background:repeating-linear-gradient(135deg,var(--color-neutral-200),var(--color-neutral-200) 6px,var(--color-neutral-100) 6px,var(--color-neutral-100) 12px);display:flex;align-items:flex-end;padding:6px">
+              <div style="height:72px;background:var(--color-neutral-200) url({{ c.photo }}) center / cover no-repeat;display:flex;align-items:flex-end;padding:7px">
+                <span style="font-size:10px;letter-spacing:.06em;padding:2px 6px;background:var(--color-bg);color:var(--color-text)">{{ c.photoLabel }}</span>
+              </div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px">
+                <span class="card-title" style="font-size:16px">{{ c.name }}</span>
+                <span style="font-size:11px;color:{{ c.statusFg }};white-space:nowrap">{{ c.statusLabel }}</span>
+              </div>
+              <div class="card-meta">{{ c.meta }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ modeIndex }}" hint-placeholder-val="{{ false }}">
+        <div class="blueprint" style="position:relative;margin:0 10px 10px;background:var(--color-bg);padding:9px 11px 10px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px">
+            <h6 style="margin:0">Index — {{ count }} spots</h6>
+            <span style="font-size:11px;opacity:.55">sorted by distance</span>
+          </div>
+          <sc-for list="{{ indexRows }}" as="r" hint-placeholder-count="4">
+            <div onClick="{{ r.open }}" class="sm-tap" style="display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid color-mix(in srgb,var(--color-text) 8%,transparent)">
+              <span style="width:22px;font-family:var(--font-heading);font-weight:600;font-size:13px;color:var(--color-accent)">{{ r.badge }}</span>
+              <span style="flex:1;font-size:14px">{{ r.name }}</span>
+              <span style="font-size:11px;opacity:.55">{{ r.kind }}</span>
+              <span style="font-size:11px;color:{{ r.statusFg }};width:62px;text-align:right">{{ r.statusLabel }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ mapFirst }}" hint-placeholder-val="{{ false }}">
+        <div style="position:relative;padding:0 12px 12px;display:flex;gap:8px">
+          <div onClick="{{ startPlace }}" class="btn btn-primary sm-tap" style="flex:1;height:46px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"></path></svg>
+            Drop a spot
+          </div>
+          <div onClick="{{ goProfile }}" class="btn btn-secondary sm-tap" style="height:46px;background:var(--color-bg)">Mine</div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ placing }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;gap:10px;padding:12px 13px;background:var(--color-accent);color:var(--color-bg)">
+          <div style="flex:1">
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.1">Tap the map to place it</div>
+            <div style="font-size:11px;opacity:.8">±5 m · drag to adjust after</div>
+          </div>
+          <div onClick="{{ cancelPlace }}" class="btn sm-tap" style="height:36px;border-color:var(--color-bg);color:var(--color-bg)">Cancel</div>
+        </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- ══ SPOT DETAIL ══ -->
+    <sc-if value="{{ onSpot }}" hint-placeholder-val="{{ false }}">
+    <div class="sm-scroll" style="position:absolute;inset:0;overflow:auto;background:var(--color-bg)">
+      <div class="duotone" style="position:relative;height:200px;background:var(--color-neutral-200) url({{ spot.photo }}) center / cover no-repeat">
+        <span style="position:absolute;left:12px;bottom:10px;font-size:10px;letter-spacing:.06em;padding:3px 8px;background:var(--color-bg);color:var(--color-text);z-index:2">{{ spot.photoLabel }}</span>
+        <div onClick="{{ openSpotCamera }}" class="btn btn-primary sm-tap" style="position:absolute;right:12px;bottom:10px;z-index:2;height:34px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+          Add photo
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;padding:10px 12px 0">
+        <div onClick="{{ back }}" class="btn btn-secondary btn-icon sm-tap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"></path></svg>
+        </div>
+        <div style="flex:1"></div>
+        <div class="btn btn-secondary sm-tap">Save</div>
+        <div onClick="{{ openEdit }}" class="btn btn-primary sm-tap">Edit</div>
+      </div>
+
+      <div style="padding:12px 12px 24px;display:flex;flex-direction:column;gap:18px">
+        <div>
+          <div style="display:flex;align-items:baseline;gap:9px">
+            <h3 style="margin:0">{{ spot.name }}</h3>
+            <span class="tag tag-outline">{{ spot.kind }}</span>
+          </div>
+          <div class="card-meta" style="margin-top:4px">{{ spot.coords }} · {{ spot.by }} · {{ spot.edits }} edits</div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <h6 style="margin:0">Condition</h6>
+          <div style="display:flex;gap:8px">
+            <sc-for list="{{ statuses }}" as="s" hint-placeholder-count="3">
+              <div onClick="{{ s.pick }}" class="sm-tap" style="flex:1;padding:9px 6px;text-align:center;background:{{ s.bg }};border:1px solid {{ s.br }};color:{{ s.fg }}">
+                <div style="font-family:var(--font-heading);font-weight:600;font-size:14px">{{ s.label }}</div>
+                <div style="font-size:10px;opacity:.65">{{ s.votes }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="font-size:11px;opacity:.55">Confirmed {{ spot.confirmed }}</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+          <sc-for list="{{ specs }}" as="sp" hint-placeholder-count="4">
+            <div class="blueprint" style="padding:9px 10px">
+              <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+              <div style="font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--color-accent-700)">{{ sp.k }}</div>
+              <div style="font-size:14px;margin-top:2px">{{ sp.v }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <h6 style="margin:0">Notes</h6>
+          <p style="margin:0;font-size:14px;line-height:1.55;text-wrap:pretty">{{ spot.beta }}</p>
+          <div style="font-size:11px;opacity:.55">Edited 4d ago by {{ spot.lastEditor }} · <a href="#history">history</a></div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between">
+            <h6 style="margin:0">Thread</h6>
+            <div onClick="{{ goThread }}" class="btn btn-ghost sm-tap">Open</div>
+          </div>
+          <sc-for list="{{ spotPosts }}" as="p" hint-placeholder-count="2">
+            <div style="display:flex;gap:10px;padding-top:9px;border-top:1px solid var(--color-divider)">
+              <div style="width:26px;height:26px;flex:none;background:{{ p.av }}"></div>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:12px"><span style="font-family:var(--font-heading);font-weight:600;font-size:14px">{{ p.who }}</span> <span style="opacity:.5">{{ p.when }}</span></div>
+                <div style="font-size:13px;line-height:1.45;margin-top:2px">{{ p.text }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ ADD / EDIT SPOT ══ -->
+    <sc-if value="{{ onForm }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-neutral-900) 45%,transparent);display:flex;flex-direction:column;justify-content:flex-end">
+      <div class="sm-scroll" style="background:var(--color-bg);border-top:1px solid var(--color-divider);padding:14px 14px 18px;display:flex;flex-direction:column;gap:14px;max-height:100%;overflow:auto">
+        <div style="display:flex;align-items:baseline;justify-content:space-between">
+          <h4 style="margin:0">{{ formTitle }}</h4>
+          <span style="font-size:11px;opacity:.55">{{ formCoords }}</span>
+        </div>
+
+        <div class="field">
+          <label>Name</label>
+          <input class="input" value="{{ fName }}" onChange="{{ setName }}" placeholder="Bishop St. ledges">
+        </div>
+
+        <div class="field">
+          <label>Type</label>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <sc-for list="{{ kinds }}" as="k" hint-placeholder-count="6">
+              <div onClick="{{ k.pick }}" class="tag sm-tap" style="height:30px;background:{{ k.bg }};color:{{ k.fg }};border:1px solid {{ k.br }}">{{ k.label }}</div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Photos</label>
+          <div class="sm-scroll" style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none">
+            <sc-for list="{{ shots }}" as="sh" hint-placeholder-count="1">
+              <div style="flex:none;position:relative;width:72px;height:72px;background:#000 url({{ sh.src }}) center / cover no-repeat;border:1px solid var(--color-divider)">
+                <div onClick="{{ sh.remove }}" class="sm-tap" style="position:absolute;top:0;right:0;width:22px;height:22px;background:var(--color-bg);border-left:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);display:flex;align-items:center;justify-content:center;font-size:12px">×</div>
+              </div>
+            </sc-for>
+            <div onClick="{{ openCamera }}" class="sm-tap" style="flex:none;width:72px;height:72px;border:1px dashed color-mix(in srgb,var(--color-text) 30%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--color-accent)">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"></path><circle cx="12" cy="13" r="3.5"></circle></svg>
+              <span style="font-size:9px;letter-spacing:.08em;text-transform:uppercase">Camera</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Notes</label>
+          <textarea class="input" style="min-height:74px" value="{{ fBeta }}" onChange="{{ setBeta }}" placeholder="Surface, run-up, bust risk, best hours"></textarea>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+          <div>
+            <div style="font-family:var(--font-heading);font-weight:600;font-size:15px">Crew only</div>
+            <div style="font-size:11px;opacity:.55">Hidden from the public map</div>
+          </div>
+          <div onClick="{{ togglePrivate }}" class="sm-tap" style="width:48px;height:28px;padding:3px;background:{{ privBg }};border:1px solid {{ privBr }};display:flex;justify-content:{{ privPos }}">
+            <div style="width:20px;height:20px;background:{{ privKnob }}"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px">
+          <div onClick="{{ cancelForm }}" class="btn btn-secondary sm-tap" style="height:44px">Cancel</div>
+          <div onClick="{{ saveSpot }}" class="btn btn-primary sm-tap" style="flex:1;height:44px">{{ saveLabel }}</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ FORUM ══ -->
+    <sc-if value="{{ onForum }}" hint-placeholder-val="{{ false }}">
+    <div class="sm-scroll" style="position:absolute;inset:0;overflow:auto;background:var(--color-bg);padding:12px 12px 18px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <sc-if value="{{ mapFirst }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ back }}" class="btn btn-secondary btn-icon sm-tap">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"></path></svg>
+          </div>
+        </sc-if>
+        <h3 style="margin:0;flex:1">Forum</h3>
+        <span style="font-size:11px;opacity:.55">2,431 members</span>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <sc-for list="{{ boards }}" as="b" hint-placeholder-count="5">
+          <div onClick="{{ b.pick }}" class="tag sm-tap" style="height:26px;background:{{ b.bg }};color:{{ b.fg }};border:1px solid {{ b.br }}">{{ b.label }}</div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ threads }}" as="t" hint-placeholder-count="5">
+        <div onClick="{{ t.open }}" class="card blueprint sm-tap" style="gap:6px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="card-kicker">{{ t.tag }}</span>
+            <span style="font-size:11px;opacity:.5">{{ t.when }}</span>
+          </div>
+          <div class="card-title" style="text-wrap:pretty">{{ t.title }}</div>
+          <div class="card-meta">{{ t.by }} · {{ t.replies }} replies · {{ t.likes }} up</div>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ══ THREAD ══ -->
+    <sc-if value="{{ onThread }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:var(--color-bg)">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--color-divider)">
+        <div onClick="{{ back }}" class="btn btn-secondary btn-icon sm-tap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"></path></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ thread.title }}</div>
+          <div style="font-size:11px;opacity:.55">{{ thread.tag }} · {{ thread.replies }} replies</div>
+        </div>
+      </div>
+      <div class="sm-scroll" style="flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:14px">
+        <sc-for list="{{ posts }}" as="p" hint-placeholder-count="4">
+          <div style="display:flex;gap:10px">
+            <div style="width:30px;height:30px;flex:none;background:{{ p.av }}"></div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:baseline;gap:7px">
+                <span style="font-family:var(--font-heading);font-weight:600;font-size:15px">{{ p.who }}</span>
+                <span style="font-size:11px;opacity:.5">{{ p.when }}</span>
+                <sc-if value="{{ p.op }}" hint-placeholder-val="{{ false }}"><span class="tag tag-accent" style="font-size:10px">OP</span></sc-if>
+              </div>
+              <div style="font-size:14px;line-height:1.5;margin-top:3px;text-wrap:pretty">{{ p.text }}</div>
+              <sc-if value="{{ p.spot }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ p.openSpot }}" class="blueprint sm-tap" style="margin-top:7px;display:flex;align-items:center;gap:8px;padding:7px 9px">
+                  <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--color-accent)"><path d="M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+                  <span style="font-size:13px">{{ p.spot }}</span>
+                </div>
+              </sc-if>
+              <div style="display:flex;gap:14px;margin-top:6px;font-size:11px;color:var(--color-accent-700)">
+                <span class="sm-tap">Up {{ p.likes }}</span><span class="sm-tap">Reply</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="flex:none;display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--color-divider)">
+        <input class="input" value="{{ draftReply }}" onChange="{{ setReply }}" placeholder="Reply">
+        <div onClick="{{ sendReply }}" class="btn btn-primary sm-tap" style="min-width:64px">Post</div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ══ MESSAGES ══ -->
+    <sc-if value="{{ onMessages }}" hint-placeholder-val="{{ false }}">
+    <div class="sm-scroll" style="position:absolute;inset:0;overflow:auto;background:var(--color-bg);padding:12px 0 18px">
+      <div style="display:flex;align-items:center;gap:10px;padding:0 12px 10px">
+        <sc-if value="{{ mapFirst }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ back }}" class="btn btn-secondary btn-icon sm-tap">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 5l-7 7 7 7"></path></svg>
+          </div>
+        </sc-if>
+        <h3 style="margin:0;flex:1">Messages</h3>
+        <div class="btn btn-secondary btn-icon sm-tap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"></path></svg>
+        </div>
+      </div>
+      <sc-for list="{{ convos }}" as="m" hint-placeholder-count="6">
+        <div class="sm-tap" style="display:flex;gap:11px;align-items:center;padding:11px 12px;border-top:1px solid var(--color-divider)">
+          <div style="width:38px;height:38px;flex:none;background:{{ m.av }}"></div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:baseline;gap:7px">
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:15px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.who }}</span>
+              <span style="font-size:11px;opacity:.5">{{ m.when }}</span>
+            </div>
+            <div style="font-size:13px;opacity:{{ m.op }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.last }}</div>
+          </div>
+          <sc-if value="{{ m.unread }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;flex:none;background:var(--color-accent)"></span></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+
+    <!-- ══ CAMERA ══ -->
+    <sc-if value="{{ onCamera }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:var(--color-bg);display:flex;flex-direction:column">
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px">
+        <div onClick="{{ closeCamera }}" class="btn btn-secondary btn-icon sm-tap">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-heading);font-weight:600;font-size:16px;line-height:1.15">Camera</div>
+          <div style="font-size:11px;opacity:.55">{{ camLabel }}</div>
+        </div>
+      </div>
+      <div class="blueprint" style="position:relative;flex:1;margin:0 18px;overflow:hidden;background:var(--color-neutral-200)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <video ref="{{ videoRef }}" autoPlay="{{ true }}" muted="{{ true }}" playsInline="{{ true }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video>
+        <sc-if value="{{ camFallback }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;inset:0;background:var(--color-neutral-200) url(./assets/ph-8.png) center / cover no-repeat"></div>
+        </sc-if>
+        <div style="position:absolute;inset:0;pointer-events:none;display:flex;align-items:center;justify-content:center">
+          <div style="position:absolute;top:0;bottom:0;left:33.33%;width:1px;background:rgba(242,242,243,.4)"></div>
+          <div style="position:absolute;top:0;bottom:0;left:66.66%;width:1px;background:rgba(242,242,243,.4)"></div>
+          <div style="position:absolute;left:0;right:0;top:33.33%;height:1px;background:rgba(242,242,243,.4)"></div>
+          <div style="position:absolute;left:0;right:0;top:66.66%;height:1px;background:rgba(242,242,243,.4)"></div>
+        </div>
+      </div>
+      <div style="flex:none;display:flex;align-items:center;gap:14px;padding:14px 18px 18px">
+        <div class="sm-scroll" style="flex:1;display:flex;gap:7px;overflow-x:auto;scrollbar-width:none">
+          <sc-for list="{{ shots }}" as="sh" hint-placeholder-count="1">
+            <div style="flex:none;width:46px;height:46px;background:#000 url({{ sh.src }}) center / cover no-repeat;border:1px solid var(--color-divider)"></div>
+          </sc-for>
+        </div>
+        <div onClick="{{ shutter }}" class="sm-tap" style="width:66px;height:66px;flex:none;border-radius:50%;background:var(--color-accent);box-shadow:0 0 0 3px var(--color-bg),0 0 0 4px var(--color-accent)"></div>
+        <div onClick="{{ doneCamera }}" class="btn btn-secondary sm-tap" style="flex:1;max-width:88px;justify-content:center">Done</div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+  <!-- ══ TAB BAR ══ -->
+  <sc-if value="{{ tabsNav }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:none;display:flex;border-top:1px solid var(--color-divider);background:var(--color-bg);padding-bottom:{{ safeBottom }}">
+    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+      <div onClick="{{ t.pick }}" class="sm-tap" style="flex:1;padding:9px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;color:{{ t.fg }}">
+        <div style="width:22px;height:22px">{{ t.icon }}</div>
+        <span style="font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-family:var(--font-heading);font-weight:600">{{ t.label }}</span>
+      </div>
+    </sc-for>
+  </div>
+  </sc-if>
+  <sc-if value="{{ mapFirst }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;height:{{ safeBottom }}"></div>
+  </sc-if>
+</div>
+</x-import>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:440,&quot;height&quot;:900},&quot;platform&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ios&quot;,&quot;android&quot;],&quot;default&quot;:&quot;ios&quot;,&quot;tsType&quot;:&quot;'ios' | 'android'&quot;},&quot;nav&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tabs&quot;,&quot;mapFirst&quot;],&quot;default&quot;:&quot;tabs&quot;,&quot;tsType&quot;:&quot;'tabs' | 'mapFirst'&quot;},&quot;mapMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;pins&quot;,&quot;index&quot;],&quot;default&quot;:&quot;pins&quot;,&quot;tsType&quot;:&quot;'pins' | 'index'&quot;},&quot;city&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Regensburg, DE&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const ACC = 'var(--color-accent)', BG = 'var(--color-bg)', DIV = 'var(--color-divider)';
+const STATUS = {
+  ok: { label: 'Skateable', fg: 'var(--color-accent-800)', bg: 'var(--color-accent-100)' },
+  watch: { label: 'Bust risk', fg: 'var(--color-neutral-900)', bg: 'var(--color-neutral-200)' },
+  closed: { label: 'Closed', fg: 'var(--color-neutral-100)', textFg: 'var(--color-neutral-900)', bg: 'var(--color-neutral-800)' },
+};
+const KINDS = ['Ledge', 'Rail', 'Bank', 'Gap', 'Park', 'POI'];
+
+class Component extends DCLogic {
+  state = {
+    screen: 'map', tab: 'map', sel: 's1', filter: 'All', board: 'All',
+    placing: false, draft: null, editing: false,
+    fName: '', fKind: 'Ledge', fBeta: '', fPriv: false,
+    threadId: 't1', reply: '',
+    camera: false, camTarget: null, camError: false, shots: [],
+    spots: [
+      { id: 's1', name: 'Donaumarkt ledges', kind: 'Ledge', lat: 49.02255, lng: 12.09985, st: 'ok', by: 'lena.h', edits: 12, coords: '49.0208 N · 12.0995 E', confirmed: '2 days ago', lastEditor: 'basti_rgb', dist: '0.4 km',
+        beta: 'Four granite ledges by the museum, knee height, waxed. Smooth run-up from the river side; the south end has a drain you will feel. Museum staff only mind it during opening hours.',
+        specs: [['Surface', 'Polished granite'], ['Run-up', '12 m, flat'], ['Best hours', 'After 18:00'], ['Lighting', 'Street-lit']] },
+      { id: 's2', name: 'Dultplatz banks', kind: 'Bank', lat: 49.02594, lng: 12.09772, st: 'watch', by: 'j_wagner', edits: 7, coords: '49.0243 N · 12.0982 E', confirmed: '5 hours ago', lastEditor: 'lena.h', dist: '1.1 km',
+        beta: 'Two brick banks into a flat wall in Stadtamhof. Bricks loose at the top right. Fenced off for the Dult and for markets — check the board before you ride out.',
+        specs: [['Surface', 'Brick, patched'], ['Run-up', '6 m, downhill'], ['Best hours', 'Weekends'], ['Lighting', 'None']] },
+      { id: 's3', name: 'Arnulfsplatz rail', kind: 'Rail', lat: 49.01924, lng: 12.08927, st: 'closed', by: 'tobi.k', edits: 21, coords: '49.0187 N · 12.0891 E', confirmed: 'yesterday', lastEditor: 'tobi.k', dist: '0.9 km',
+        beta: 'Skate stoppers welded on in March. Kept here for the record and for anyone tracking the city\u2019s stoppers — do not ride out for it.',
+        specs: [['Surface', 'Round steel'], ['Run-up', '8 m'], ['Best hours', '—'], ['Lighting', 'Overhead']] },
+      { id: 's4', name: 'Jahninsel bench + tap', kind: 'POI', lat: 49.02261, lng: 12.09231, st: 'ok', by: 'community', edits: 3, coords: '49.0201 N · 12.0863 E', confirmed: 'last week', lastEditor: 'mira.s', dist: '1.4 km',
+        beta: 'Drinking tap runs from April to October, benches and shade under the trees. Default meet point before a session on the island.',
+        specs: [['Type', 'Tap + benches'], ['Access', 'Public'], ['Best hours', 'Daylight'], ['Lighting', 'Park lamp']] },
+      { id: 's5', name: 'Ostentor gap', kind: 'Gap', lat: 49.01836, lng: 12.10322, st: 'ok', by: 'basti_rgb', edits: 9, coords: '49.0163 N · 12.1049 E', confirmed: '3 days ago', lastEditor: 'basti_rgb', dist: '2.0 km',
+        beta: 'Three-stair gap over a planter, landing resurfaced in June. Bikes cut through from the Ostengasse — post a spotter.',
+        specs: [['Surface', 'Asphalt'], ['Run-up', '15 m'], ['Best hours', 'Sunday AM'], ['Lighting', 'Street-lit']] },
+    ],
+    threads: [
+      { id: 't1', tag: 'City', title: 'Skate stoppers in the Altstadt — what is still standing?', by: 'tobi.k', when: '2h', replies: 34, likes: 121 },
+      { id: 't2', tag: 'Gear', title: 'Wheels for Altstadt cobbles — soft enough, still fast?', by: 'mira.s', when: '5h', replies: 18, likes: 44 },
+      { id: 't3', tag: 'Sessions', title: 'Saturday 10:00, Donaumarkt — all levels', by: 'lena.h', when: '1d', replies: 52, likes: 88 },
+      { id: 't4', tag: 'Builds', title: 'DIY quarter pipe under the Nibelungenbrücke: permit or not?', by: 'basti_rgb', when: '2d', replies: 27, likes: 60 },
+      { id: 't5', tag: 'Buy / sell', title: 'Selling an 8.25 complete, barely ridden', by: 'j_wagner', when: '3d', replies: 6, likes: 9 },
+    ],
+    posts: [
+      { who: 'tobi.k', when: '2h', op: true, likes: 41, text: 'Rode a loop from the Steinerne Brücke down to the Ostentor. Arnulfsplatz is stoppered, the ledges at the museum survived. Adding what I saw to the map now.', spot: 'Arnulfsplatz rail' },
+      { who: 'lena.h', when: '1h', likes: 12, text: 'Donaumarkt is untouched. Re-confirmed the status this morning.' },
+      { who: 'mira.s', when: '52m', likes: 5, text: 'Anyone checked the banks? Last time there was a fence up for the market.' },
+      { who: 'basti_rgb', when: '30m', likes: 8, text: 'Fence is down. Bricks still loose top right, so I marked it bust risk rather than closed.', spot: 'Dultplatz banks' },
+    ],
+    convos: [
+      { who: 'lena.h', when: '9:41', last: 'Donaumarkt at 10, bring the wide angle', unread: true },
+      { who: 'Regensburg ledges crew', when: '9:02', last: 'basti_rgb: added three photos to Ostentor gap', unread: true },
+      { who: 'tobi.k', when: 'Yst', last: 'Sent you the stopper overlay for the Altstadt' },
+      { who: 'mira.s', when: 'Yst', last: 'Jahninsel is a good meet point, agreed' },
+      { who: 'j_wagner', when: 'Mon', last: 'Board is still available if you want it' },
+      { who: 'Moderators', when: 'Sun', last: 'Your edit to Arnulfsplatz rail was approved' },
+    ],
+  };
+
+  av(i) { return ['var(--color-accent-300)', 'var(--color-neutral-300)', 'var(--color-accent-500)', 'var(--color-neutral-400)', 'var(--color-accent-200)', 'var(--color-neutral-200)'][i % 6]; }
+
+  chip(active) {
+    return active
+      ? { bg: ACC, fg: BG, br: ACC }
+      : { bg: 'transparent', fg: 'var(--color-text)', br: DIV };
+  }
+
+  go(screen, extra) { this.setState(Object.assign({ screen }, extra || {})); }
+
+  mapRef = React.createRef();
+  videoRef = React.createRef();
+
+  startCam() {
+    if (this.stream) return;
+    const md = navigator.mediaDevices;
+    if (!md || !md.getUserMedia) { this.setState({ camError: true }); return; }
+    md.getUserMedia({ video: { facingMode: 'environment' }, audio: false }).then(st => {
+      this.stream = st;
+      if (this.videoRef.current) this.videoRef.current.srcObject = st;
+      this.setState({ camError: false });
+    }).catch(() => this.setState({ camError: true }));
+  }
+
+  stopCam() {
+    if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+    if (this.videoRef.current) this.videoRef.current.srcObject = null;
+  }
+
+  grab() {
+    const v = this.videoRef.current;
+    if (!this.stream || !v || !v.videoWidth) return './assets/ph-8.png';
+    const c = document.createElement('canvas');
+    const w = 720, h = Math.round(w * v.videoHeight / v.videoWidth);
+    c.width = w; c.height = h;
+    c.getContext('2d').drawImage(v, 0, 0, w, h);
+    return c.toDataURL('image/jpeg', 0.82);
+  }
+
+  componentDidMount() {
+    this.onMsg = ev => {
+      const f = this.mapRef.current;
+      if (!f || ev.source !== f.contentWindow) return;
+      const d = ev.data || {};
+      if (d.sm === 'ready') { this.mapReady = true; this.pushSpots(); }
+      if (d.sm === 'pin') this.setState({ screen: 'spot', tab: 'map', sel: d.id });
+      if (d.sm === 'tap' && this.state.placing) {
+        this.setState({ placing: false, screen: 'form', draft: { lat: d.lat, lng: d.lng } });
+      }
+    };
+    window.addEventListener('message', this.onMsg);
+  }
+
+  componentWillUnmount() { window.removeEventListener('message', this.onMsg); this.stopCam(); }
+
+  componentDidUpdate() {
+    this.pushSpots();
+    if (this.state.camera) this.startCam(); else this.stopCam();
+  }
+
+  pushSpots() {
+    const f = this.mapRef.current;
+    if (!f || !this.mapReady || !f.contentWindow) return;
+    const s = this.state;
+    const mode = this.props.mapMode ?? 'pins';
+    const spots = s.spots
+      .filter(x => s.filter === 'All' || x.kind === s.filter)
+      .map(x => ({
+        id: x.id, name: x.name, lat: x.lat, lng: x.lng,
+        badge: mode === 'index' ? String(s.spots.indexOf(x) + 1) : String(s.spots.indexOf(x) + 1).padStart(2, '0'),
+        selected: x.id === s.sel,
+      }));
+    f.contentWindow.postMessage({ sm: 'spots', spots, mode }, '*');
+  }
+
+  dist(x) {
+    const R = 6371, la = 49.0205, lo = 12.0965;
+    const dLa = (x.lat - la) * Math.PI / 180, dLo = (x.lng - lo) * Math.PI / 180;
+    const a = Math.sin(dLa / 2) ** 2 + Math.cos(la * Math.PI / 180) * Math.cos(x.lat * Math.PI / 180) * Math.sin(dLo / 2) ** 2;
+    return (2 * R * Math.asin(Math.sqrt(a))).toFixed(1) + ' km';
+  }
+
+  photo(i) { return ['./assets/ph-5.png', './assets/ph-1.jpg', './assets/ph-7.png', './assets/ph-6.jpg', './assets/ph-3.jpg'][i % 5]; }
+
+  coordStr(lat, lng) { return lat.toFixed(5) + ' N · ' + lng.toFixed(5) + ' E'; }
+
+  icon(name, active) {
+    const e = React.createElement;
+    const p = { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: active ? 1.9 : 1.5, strokeLinecap: 'round', strokeLinejoin: 'round' };
+    const paths = {
+      map: ['M12 21s7-6 7-11a7 7 0 1 0-14 0c0 5 7 11 7 11z', 'M12 10m-2.5 0a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0 -5 0'],
+      forum: ['M21 12a8 8 0 0 1-8 8H4l2.2-3A8 8 0 1 1 21 12z'],
+      inbox: ['M3 6h18v12H3z', 'M3 7l9 6 9-6'],
+      you: ['M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0', 'M4 21c1.6-3.4 4.4-5 8-5s6.4 1.6 8 5'],
+    };
+    return e('svg', p, paths[name].map((d, i) => e('path', { key: i, d })));
+  }
+
+  renderVals() {
+    const s = this.state;
+    const platform = this.props.platform ?? 'ios';
+    const nav = this.props.nav ?? 'tabs';
+    const mapMode = this.props.mapMode ?? 'pins';
+    const isIOS = platform !== 'android';
+    const spot = s.spots.find(x => x.id === s.sel) || s.spots[0];
+    const visible = s.spots.filter(x => s.filter === 'All' || x.kind === s.filter);
+    const openSpot = id => this.go('spot', { sel: id, tab: 'map' });
+
+    const thread = s.threads.find(t => t.id === s.threadId) || s.threads[0];
+
+    return {
+      deviceName: isIOS ? 'IOSDevice' : 'AndroidDevice',
+      isIOS, city: this.props.city ?? 'Regensburg, DE',
+      safeBottom: isIOS ? '30px' : '22px',
+      mapRef: this.mapRef,
+      tabsNav: nav === 'tabs', mapFirst: nav === 'mapFirst',
+      modePins: mapMode === 'pins', modeIndex: mapMode === 'index',
+      count: visible.length,
+
+      onMap: s.screen === 'map' || s.screen === 'form',
+      onSpot: s.screen === 'spot',
+      onForm: s.screen === 'form',
+      onForum: s.screen === 'forum',
+      onThread: s.screen === 'thread',
+      onMessages: s.screen === 'messages',
+      onCamera: s.camera,
+      videoRef: this.videoRef,
+      camFallback: s.camError,
+      camLabel: s.camError
+        ? 'Camera unavailable — using a demo frame'
+        : (s.camTarget ? 'Adding to ' + (s.spots.find(x => x.id === s.camTarget) || {}).name : 'New spot'),
+      shots: s.shots.map((src, i) => ({ src, remove: () => this.setState({ shots: s.shots.filter((_, j) => j !== i) }) })),
+      openCamera: () => this.setState({ camera: true, camTarget: null }),
+      openSpotCamera: () => this.setState({ camera: true, camTarget: spot.id, shots: [] }),
+      closeCamera: () => this.setState({ camera: false }),
+      doneCamera: () => this.setState({ camera: false }),
+      shutter: () => {
+        const src = this.grab();
+        if (s.camTarget) {
+          this.setState({
+            spots: s.spots.map(x => x.id === s.camTarget
+              ? Object.assign({}, x, { photos: [src].concat(x.photos || []), edits: x.edits + 1, lastEditor: 'you' }) : x),
+            shots: [src].concat(s.shots),
+          });
+        } else {
+          this.setState({ shots: [src].concat(s.shots) });
+        }
+      },
+      placing: s.placing,
+
+      indexRows: visible.map((p) => ({
+        badge: String(s.spots.indexOf(p) + 1), name: p.name, kind: p.kind,
+        statusLabel: STATUS[p.st].label, statusFg: STATUS[p.st].textFg || STATUS[p.st].fg, open: () => openSpot(p.id),
+      })),
+      rail: visible.slice(0, 4).map(p => ({
+        name: p.name, photoLabel: p.kind.toLowerCase(), photo: (p.photos || [])[0] || this.photo(s.spots.indexOf(p)),
+        statusLabel: STATUS[p.st].label, statusFg: STATUS[p.st].textFg || STATUS[p.st].fg,
+        meta: this.dist(p) + ' · ' + p.edits + ' edits', open: () => openSpot(p.id),
+      })),
+      filters: ['All'].concat(KINDS).map(f => Object.assign({ label: f, pick: () => this.setState({ filter: f }) }, this.chip(s.filter === f))),
+
+      spot: Object.assign({}, spot, {
+        photoLabel: ((spot.photos || []).length + 3) + ' uploads',
+        photo: (spot.photos || [])[0] || this.photo(s.spots.indexOf(spot)),
+      }),
+      specs: spot.specs.map(([k, v]) => ({ k, v })),
+      statuses: Object.keys(STATUS).map(k => {
+        const on = spot.st === k;
+        return {
+          label: STATUS[k].label, votes: on ? 'confirmed by you' : 'tap to switch',
+          bg: on ? STATUS[k].bg : 'transparent', fg: on ? STATUS[k].fg : 'var(--color-text)',
+          br: on ? 'transparent' : DIV,
+          pick: () => this.setState({ spots: s.spots.map(x => x.id === spot.id ? Object.assign({}, x, { st: k, confirmed: 'just now', edits: x.edits + 1 }) : x) }),
+        };
+      }),
+      spotPosts: s.posts.slice(0, 2).map((p, i) => ({ who: p.who, when: p.when, text: p.text, av: this.av(i) })),
+
+      formTitle: s.editing ? 'Edit spot' : 'New spot',
+      saveLabel: s.editing ? 'Save changes' : 'Publish spot',
+      formCoords: s.draft ? this.coordStr(s.draft.lat, s.draft.lng) : spot.coords,
+      fName: s.fName, fBeta: s.fBeta,
+      setName: ev => this.setState({ fName: ev.target.value }),
+      setBeta: ev => this.setState({ fBeta: ev.target.value }),
+      kinds: KINDS.map(k => Object.assign({ label: k, pick: () => this.setState({ fKind: k }) }, this.chip(s.fKind === k))),
+      privBg: s.fPriv ? ACC : 'transparent', privBr: s.fPriv ? ACC : DIV,
+      privKnob: s.fPriv ? BG : 'var(--color-neutral-500)', privPos: s.fPriv ? 'flex-end' : 'flex-start',
+      togglePrivate: () => this.setState({ fPriv: !s.fPriv }),
+      cancelForm: () => this.setState({ screen: s.editing ? 'spot' : 'map', draft: null, editing: false }),
+      saveSpot: () => {
+        if (s.editing) {
+          this.setState({
+            screen: 'spot', editing: false, shots: [],
+            spots: s.spots.map(x => x.id === spot.id ? Object.assign({}, x, { name: s.fName || x.name, kind: s.fKind, beta: s.fBeta || x.beta, edits: x.edits + 1, lastEditor: 'you', photos: s.shots.concat(x.photos || []) }) : x),
+          });
+        } else {
+          const id = 'n' + Date.now();
+          const d = s.draft || { lat: 49.0205, lng: 12.0965 };
+          this.setState({
+            screen: 'spot', sel: id, draft: null, shots: [],
+            spots: s.spots.concat([{
+              id, name: s.fName || 'Untitled spot', kind: s.fKind, lat: d.lat, lng: d.lng, st: 'ok', by: 'you', edits: 1, photos: s.shots.slice(),
+              coords: this.coordStr(d.lat, d.lng),
+              confirmed: 'just now', lastEditor: 'you',
+              beta: s.fBeta || 'No notes yet — add the surface, run-up and bust risk so the next person knows.',
+              specs: [['Surface', '—'], ['Run-up', '—'], ['Best hours', '—'], ['Lighting', '—']],
+            }]),
+          });
+        }
+      },
+      startPlace: () => this.setState({ screen: 'map', tab: 'map', placing: true, editing: false, fName: '', fBeta: '', fKind: 'Ledge', fPriv: false, shots: [], camTarget: null }),
+      cancelPlace: () => this.setState({ placing: false }),
+      openEdit: () => this.setState({ screen: 'form', editing: true, fName: spot.name, fKind: spot.kind, fBeta: spot.beta, shots: [] }),
+
+      boards: ['All', 'City', 'Gear', 'Sessions', 'Builds', 'Buy / sell'].map(b => Object.assign({ label: b, pick: () => this.setState({ board: b }) }, this.chip(s.board === b))),
+      threads: s.threads.filter(t => s.board === 'All' || t.tag === s.board).map(t => Object.assign({}, t, {
+        open: () => this.go('thread', { threadId: t.id }),
+      })),
+      thread,
+      posts: s.posts.map((p, i) => Object.assign({}, p, {
+        av: this.av(i), op: !!p.op, spot: p.spot || false,
+        openSpot: () => { const m = s.spots.find(x => x.name === p.spot); if (m) openSpot(m.id); },
+      })),
+      draftReply: s.reply,
+      setReply: ev => this.setState({ reply: ev.target.value }),
+      sendReply: () => {
+        if (!s.reply.trim()) return;
+        this.setState({ reply: '', posts: s.posts.concat([{ who: 'you', when: 'now', likes: 0, text: s.reply.trim() }]) });
+      },
+      convos: s.convos.map((m, i) => ({ who: m.who, when: m.when, last: m.last, unread: !!m.unread, op: m.unread ? 1 : .55, av: this.av(i + 1) })),
+
+      goForum: () => this.go('forum', { tab: 'forum' }),
+      goMessages: () => this.go('messages', { tab: 'inbox' }),
+      goProfile: () => this.go('map', { tab: 'you' }),
+      goThread: () => this.go('thread', { threadId: 't1' }),
+      back: () => this.setState({ screen: s.screen === 'thread' ? 'forum' : 'map' }),
+      tabs: [
+        { key: 'map', label: 'Map', screen: 'map' },
+        { key: 'forum', label: 'Forum', screen: 'forum' },
+        { key: 'inbox', label: 'Inbox', screen: 'messages' },
+        { key: 'you', label: 'You', screen: 'map' },
+      ].map(t => ({
+        label: t.label, icon: this.icon(t.key === 'inbox' ? 'inbox' : t.key, s.tab === t.key),
+        fg: s.tab === t.key ? ACC : 'color-mix(in srgb, var(--color-text) 55%, transparent)',
+        pick: () => this.setState({ tab: t.key, screen: t.screen }),
+      })),
+    };
+  }
+}
+
+</script>
+</body>
+</html>
